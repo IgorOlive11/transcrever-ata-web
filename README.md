@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Transcrever ATA · Contato
 
 Aplicação web para transcrever assembleias de condomínio e gerar atas formais com IA.
@@ -111,3 +112,6 @@ Isso inicia:
 - `tailwindcss` — estilo utilitário
 - `lucide-react` — ícones
 - `clsx` — classes condicionais
+=======
+# transcrever-ata-web
+>>>>>>> ee271f800495fe36cec6867a22f2e45861d3c2be
