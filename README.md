@@ -1,5 +1,5 @@
 <<<<<<< HEAD
-# Transcrever ATA · Contato
+# Transcrever ATA
 
 Aplicação web para transcrever assembleias de condomínio e gerar atas formais com IA.
 
