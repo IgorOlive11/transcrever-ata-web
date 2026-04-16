@@ -1,12 +1,13 @@
 import { Outlet } from 'react-router-dom'
 import { FileText, Cpu } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { API_URL } from '../utils/api'
 
 export default function Layout() {
   const [apiStatus, setApiStatus] = useState(null)
 
   useEffect(() => {
-    fetch('/api/health')
+    fetch(`${API_URL}/api/health`) 
       .then(r => r.json())
       .then(setApiStatus)
       .catch(() => setApiStatus({ status: 'error' }))
