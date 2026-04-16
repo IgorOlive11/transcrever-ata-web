@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Sparkles, Loader2, AlertCircle } from 'lucide-react'
 import clsx from 'clsx'
+import { API_URL } from '../utils/api'
 
 const TIPOS_ASSEMBLEIA = [
   'EXTRAORDINÁRIA',
@@ -73,7 +74,7 @@ export default function AssemblyInfoModal({ transcricao, onConfirm, onCancel }) 
     if (!transcricao?.trim()) return alert('Nenhuma transcrição disponível para detecção por IA.')
     setIaLoading(prev => ({ ...prev, [campo]: true }))
     try {
-      const res = await fetch('/api/ia/detectar', {
+      const res = await fetch('${API_URL}/api/ia/detectar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campo, transcricao }),

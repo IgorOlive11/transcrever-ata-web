@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Download, Loader2, Eye, Code2 } from 'lucide-react'
+import { API_URL } from '../utils/api'
 
 // Renderizar markdown básico (**negrito**) para HTML visual
 function renderMarkdown(text) {
@@ -17,7 +18,7 @@ export default function AtaPreview({ ataTexto, infoAssembleia, onChange }) {
   const downloadDocx = async () => {
     setDownloading(true)
     try {
-      const res = await fetch('/api/ata/download-docx', {
+      const res = await fetch('${API_URL}/api/ata/download-docx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ata_texto: ataTexto, info_assembleia: infoAssembleia }),
