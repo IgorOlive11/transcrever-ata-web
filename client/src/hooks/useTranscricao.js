@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { fetchSSE } from '../utils/sse'
+import { API_URL } from '../utils/api'   
 
 export function useTranscricao() {
   const [status, setStatus] = useState('idle') // idle | transcribing | done | error
@@ -20,7 +21,7 @@ export function useTranscricao() {
 
     try {
       await fetchSSE(
-        '/api/transcricao/transcrever',
+        `${API_URL}/api/transcricao/transcrever`,
         { method: 'POST', body: formData },
         (event, data) => {
           if (event === 'progress') {
@@ -70,7 +71,7 @@ export function useGerarAta() {
 
     try {
       await fetchSSE(
-        '/api/ata/gerar',
+        `${API_URL}/api/ata/gerar`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
