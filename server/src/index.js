@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const auth = require('./midlewares/auth')
 
 const transcricaoRoutes = require("./routes/transcricao");
 const ataRoutes = require("./routes/ata");
@@ -18,9 +19,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/downloads", express.static(path.join(__dirname, "../downloads")));
 
 // Rotas
-app.use("/api/transcricao", transcricaoRoutes);
-app.use("/api/ata", ataRoutes);
-app.use("/api/ia", iaRoutes);
+app.use("/api/transcricao", auth, transcricaoRoutes);
+app.use("/api/ata", auth, ataRoutes);
+app.use("/api/ia", auth, iaRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
