@@ -9,17 +9,20 @@ export default function LoginPage() {
   const [error, setError] = useState(null)
   const [mode, setMode] = useState('login') // login | signup
 
-  const handleSubmit = async () => {
-    setLoading(true)
-    setError(null)
+const handleSubmit = async () => {
+  setLoading(true)
+  setError(null)
 
-    const { error } = mode === 'login'
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password })
+  const { data, error } = mode === 'login'
+    ? await supabase.auth.signInWithPassword({ email, password })
+    : await supabase.auth.signUp({ email, password })
 
-    if (error) setError(error.message)
-    setLoading(false)
-  }
+  console.log('data:', data)   // ← adicionar
+  console.log('error:', error) // ← adicionar
+
+  if (error) setError(error.message)
+  setLoading(false)
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-ink-950 px-4">
