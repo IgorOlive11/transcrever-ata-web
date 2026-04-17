@@ -1,17 +1,22 @@
 import { Outlet } from 'react-router-dom'
-import { FileText, Cpu } from 'lucide-react'
+import { FileText, Cpu, LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { API_URL } from '../utils/api'
+import { supabase } from '../lib/supabase'
 
 export default function Layout() {
   const [apiStatus, setApiStatus] = useState(null)
 
   useEffect(() => {
-    fetch(`${API_URL}/api/health`) 
+    fetch(`${API_URL}/api/health`)
       .then(r => r.json())
       .then(setApiStatus)
       .catch(() => setApiStatus({ status: 'error' }))
   }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -30,19 +35,31 @@ export default function Layout() {
             </div>
           </div>
 
-          {/* API Status */}
-          {apiStatus && (
-            <div className="flex items-center gap-3 text-xs font-body">
-              <div className="flex items-center gap-1.5">
-                <span className={`status-dot ${apiStatus.assemblyai ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                <span className="text-ink-500">AssemblyAI</span>
+          <div className="flex items-center gap-4">
+            {/* API Status */}
+            {apiStatus && (
+              <div className="flex items-center gap-3 text-xs font-body">
+                <div className="flex items-center gap-1.5">
+                  <span className={`status-dot ${apiStatus.assemblyai ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                  <span className="text-ink-500">AssemblyAI</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`status-dot ${apiStatus.openai ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                  <span className="text-ink-500">OpenAI</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className={`status-dot ${apiStatus.openai ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                <span className="text-ink-500">OpenAI</span>
-              </div>
-            </div>
-          )}
+            )}
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 text-xs text-ink-500 hover:text-red-400 transition-colors"
+              title="Sair"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sair
+            </button>
+          </div>
         </div>
       </header>
 

@@ -1,10 +1,15 @@
-/**
- * parseSSE - fetch + parse SSE stream
- * onEvent(eventName, data) called for each event
- * Returns a promise that resolves when stream ends
- */
+import { supabase } from '../lib/supabase'
+
 export async function fetchSSE(url, options, onEvent) {
-  const res = await fetch(url, options)
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
+
+  const headers = {
+    ...options.headers,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+
+  const res = await fetch(url, { ...options, headers })
 
   if (!res.ok) {
     let msg = `HTTP ${res.status}`
@@ -23,9 +28,8 @@ export async function fetchSSE(url, options, onEvent) {
 
     buffer += decoder.decode(value, { stream: true })
 
-    // Split into lines
     const lines = buffer.split('\n')
-    buffer = lines.pop() // incomplete last line stays in buffer
+    buffer = lines.pop()
 
     for (const raw of lines) {
       const line = raw.trim()
