@@ -2,23 +2,20 @@ import { Outlet } from 'react-router-dom'
 import { FileText, Cpu, LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { API_URL } from '../utils/api'
-import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Layout() {
   const [apiStatus, setApiStatus] = useState(null)
+  const { logout } = useAuth()
 
   useEffect(() => {
     fetch(`${API_URL}/api/health`)
       .then(r => r.json())
       .then(setApiStatus)
       .catch(() => setApiStatus({ status: 'error' }))
-  }, [])
+}, [])
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-  }
-
-  return (
+return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="border-b border-ink-800 bg-ink-950/80 backdrop-blur-sm sticky top-0 z-50">
@@ -52,7 +49,7 @@ export default function Layout() {
 
             {/* Logout */}
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="flex items-center gap-1.5 text-xs text-ink-500 hover:text-red-400 transition-colors"
               title="Sair"
             >
