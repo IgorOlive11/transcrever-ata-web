@@ -4,7 +4,6 @@ import { FileText, Eye, EyeOff } from 'lucide-react'
 import zxcvbn from 'zxcvbn' 
 
 const TRADUCOES = {
-  // warnings
   'Use a few words, avoid common phrases': 'Use algumas palavras, evite frases comuns',
   'No need for symbols, digits, or uppercase letters': 'Não precisa de símbolos, números ou maiúsculas',
   'Straight rows of keys are easy to guess': 'Sequências de teclado são fáceis de adivinhar',
@@ -22,7 +21,10 @@ const TRADUCOES = {
   'A word by itself is easy to guess': 'Uma palavra sozinha é fácil de adivinhar',
   'Names and surnames by themselves are easy to guess': 'Nomes sozinhos são fáceis de adivinhar',
   'Common names and surnames are easy to guess': 'Nomes comuns são fáceis de adivinhar',
-  // suggestions
+  'Invalid login credentials': 'Email ou senha incorretos.',
+  'Email not confirmed': 'Confirme seu email antes de entrar.',
+  'User already registered': 'Este email já possui uma conta.',
+  'email rate limit exceeded': 'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
   'Add another word or two. Uncommon words are better.': 'Adicione mais uma ou duas palavras incomuns.',
   'Capitalization doesn\'t help very much': 'Maiúsculas sozinhas não ajudam muito',
   'All-uppercase is almost as easy to guess as all-lowercase': 'Tudo maiúsculo é tão fácil quanto tudo minúsculo',
@@ -38,123 +40,161 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [mode, setMode] = useState('login') // login | signup
+  const [mode, setMode] = useState('login')
   const [showPassword, setShowPassword] = useState(false)
+  const [sucesso, setSuccesso] = useState(null)
+
   const resultado = zxcvbn(password)
   const forca = resultado.score
+
+  const trocarMode = (novoMode) => {
+    setMode(novoMode)
+    setError(null)
+    setSuccesso(null)
+  }
+
   const handleSubmit = async () => {
     if (mode === 'signup' && forca < 3) {
-      setError('Senha Fraca')
+      setError('Senha fraca demais. Melhore a senha antes de continuar.')
       return
     }
     setLoading(true)
+    setError(null)
+    setSuccesso(null)
 
-    const { error } = mode === 'login'
+    const { data, error } = mode === 'login'
       ? await supabase.auth.signInWithPassword({ email, password })
       : await supabase.auth.signUp({ email, password })
 
-    if (error) setError(error.message)
+    if (error) {
+      setError(traduzir(error.message))
+    } else if (mode === 'signup') {
+      if (data.user?.identities?.length === 0) {
+        setError('Este email já possui uma conta.')
+      } else {
+        setSuccesso('Conta criada! Verifique seu email para confirmar o cadastro.')
+      }
+    }
+
     setLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ink-950 px-4">
-      <div className="w-full max-w-sm">
+    <form onSubmit={e => { e.preventDefault(); handleSubmit() }}>
+      <div className="bg-ink-900 border border-ink-700 rounded-2xl p-6 space-y-4">
+        <div className="min-h-screen flex items-center justify-center bg-ink-950 px-4">
+          <div className="w-full max-w-sm">
 
-        {/* Logo */}
-        <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="w-9 h-9 rounded-lg bg-gold-400/10 border border-gold-400/30 flex items-center justify-center">
-            <FileText className="w-4 h-4 text-gold-400" />
-          </div>
-          <h1 className="font-display text-xl font-semibold text-paper-100">
-            Transcrever <span className="text-gold-400">ATA</span>
-          </h1>
-        </div>
-
-        {/* Card */}
-        <div className="bg-ink-900 border border-ink-700 rounded-2xl p-6 space-y-4">
-          <h2 className="font-display text-lg font-semibold text-paper-100 text-center">
-            {mode === 'login' ? 'Entrar' : 'Criar conta'}
-          </h2>
-
-          <div>
-            <label className="label">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="input-field w-full"
-              placeholder="seu@email.com"
-            />
-          </div>
-
-          {/* Senha */}
-          <div>
-            <label className="label">Senha</label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={e => {
-                  setPassword(e.target.value)
-                  setError(null)
-                }}
-                className="input-field w-full"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-ink-500 hover:text-paper-100"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          {mode === 'signup' && password.length > 0 && (
-            <div className='space-y-1.5'>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4].map(nivel => (
-                  <div 
-                    key={nivel} 
-                    className={`h-1 flex-1 rounded-full ${forca >= nivel ? forca <= 1 ? 'bg-red-500' : forca === 2 ? 'bg-yellow-400' : 'bg-emerald-400' : 'bg-ink-700'}`}
-                  />
-                ))}
+            {/* Logo */}
+            <div className="flex items-center gap-3 mb-8 justify-center">
+              <div className="w-9 h-9 rounded-lg bg-gold-400/10 border border-gold-400/30 flex items-center justify-center">
+                <FileText className="w-4 h-4 text-gold-400" />
               </div>
-              <p className={`text-xs ${forca <= 1 ? 'text-red-400' : forca === 2 ? 'text-yellow-400' : 'text-emerald-400'}`}>
-                {forca <= 1 ? 'Senha muito fraca' : forca === 2 ? 'Senha fraca' : forca === 3 ? 'Senha boa' : 'Senha forte'}
-                {resultado.feedback.warning ? ` - ${traduzir(resultado.feedback.warning)}` : ''}
-              </p>
-              {resultado.feedback.suggestions.length > 0 && (
-                <p className='text-xs text-ink-500'>{traduzir(resultado.feedback.suggestions[0])}</p>
-              )}
+              <h1 className="font-display text-xl font-semibold text-paper-100">
+                Transcrever <span className="text-gold-400">ATA</span>
+              </h1>
             </div>
-          )}
 
-          {error && (
-            <p className="text-xs text-red-400">{error}</p>
-          )}
+            {/* Card */}
+            <div className="bg-ink-900 border border-ink-700 rounded-2xl p-6 space-y-4">
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? 'Aguarde...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
-          </button>
+              {/* Abas */}
+              <div className="flex bg-ink-800 rounded-lg p-1">
+                <button
+                  type="button"
+                  onClick={() => trocarMode('login')}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
+                    mode === 'login' ? 'bg-ink-700 text-paper-100' : 'text-ink-500 hover:text-paper-200'
+                  }`}
+                >
+                  Entrar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => trocarMode('signup')}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
+                    mode === 'signup' ? 'bg-ink-700 text-paper-100' : 'text-ink-500 hover:text-paper-200'
+                  }`}
+                >
+                  Criar conta
+                </button>
+              </div>
 
-          <p className="text-xs text-ink-500 text-center">
-            {mode === 'login' ? 'Não tem conta?' : 'Já tem conta?'}{' '}
-            <button
-              onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-              className="text-gold-400 hover:underline"
-            >
-              {mode === 'login' ? 'Criar conta' : 'Entrar'}
-            </button>
-          </p>
+              <div>
+                <label className="label">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="input-field w-full"
+                  placeholder="seu@email.com"
+                />
+              </div>
+
+              {/* Senha */}
+              <div>
+                <label className="label">Senha</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => {
+                      setPassword(e.target.value)
+                      setError(null)
+                    }}
+                    className="input-field w-full"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-ink-500 hover:text-paper-100"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {mode === 'signup' && password.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4].map(nivel => (
+                      <div
+                        key={nivel}
+                        className={`h-1 flex-1 rounded-full ${forca >= nivel ? forca <= 1 ? 'bg-red-500' : forca === 2 ? 'bg-yellow-400' : 'bg-emerald-400' : 'bg-ink-700'}`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-xs ${forca <= 1 ? 'text-red-400' : forca === 2 ? 'text-yellow-400' : 'text-emerald-400'}`}>
+                    {forca <= 1 ? 'Senha muito fraca' : forca === 2 ? 'Senha fraca' : forca === 3 ? 'Senha boa' : 'Senha forte'}
+                    {resultado.feedback.warning ? ` — ${traduzir(resultado.feedback.warning)}` : ''}
+                  </p>
+                  {resultado.feedback.suggestions.length > 0 && (
+                    <p className="text-xs text-ink-500">{traduzir(resultado.feedback.suggestions[0])}</p>
+                  )}
+                </div>
+              )}
+
+              {error && (
+                <p className="text-xs text-red-400">{error}</p>
+              )}
+
+              {sucesso && (
+                <p className="text-xs text-emerald-400">{sucesso}</p>
+              )}
+
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="btn-primary w-full"
+              >
+                {loading ? 'Aguarde...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
+              </button>
+
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </form>
   )
 }
